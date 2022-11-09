@@ -7,10 +7,14 @@ import {
   Td,
   Tr,
   Text,
+  Link,
 } from '@chakra-ui/react';
 import { RiPencilLine } from 'react-icons/ri';
+import { api } from '../../services/api';
+import { queryClient } from '../../services/queryClient';
 
 interface TableUsersProps {
+  id: number;
   name: string;
   email: string;
   date: string;
@@ -18,7 +22,21 @@ interface TableUsersProps {
   showTitles?: boolean;
 }
 
+async function handlePrefetchUser(id: number) {
+  await queryClient.prefetchQuery(
+    ['user', id],
+    async () => {
+      const response = await api.get(`users/${id}`);
+      console.log(response.data);
+    },
+    {
+      staleTime: 1000 * 60 * 10, //10 minutes
+    },
+  );
+}
+
 export default function TableUsers({
+  id,
   name,
   email,
   date,
@@ -33,7 +51,12 @@ export default function TableUsers({
 
         <Td>
           <Box>
-            <Text fontWeight="bold">{name}</Text>
+            <Link
+              color="purple.400"
+              onMouseEnter={() => handlePrefetchUser(id)}
+            >
+              <Text fontWeight="bold">{name}</Text>
+            </Link>
             <Text fontSize="sm" color="gray.300">
               {email}
             </Text>
